@@ -9,19 +9,46 @@ const users=[
     {
         id:"abc345",
         name:"Satish Bhai",
-        email:"hutt@bkl",
+        email:"yo@bkl",
         age:"20"
     },
     {
         id:"abc789",
         name:"Waalo Bhai",
-        email:"hutt@bkl"
+        email:"gone@bkl"
+    }
+]
+const posts=[
+    {
+        id:"001",
+        title:"Post 1",
+        published: true,
+        author:'abc123',
+        body:"What do you think about the first post huh?"
+    },
+    {
+        id:"002",
+        title:"Post 2",
+        published: true,
+        author:'abc123',
+        body:"What do you think about the 2nd post huh?"
+
+    },
+    {
+        id:"003",
+        title:"Post 3",
+        published: false,
+        author:'abc789',
+        body:"What do you think about the 3rd post huh?"
+
     }
 ]
 //Typedef (schema)
 const typeDefs = `
     type Query {
         users(query:String!):[User!]!
+        posts(query:String!):[Post!]!
+        me:User!
         post:Post!      
     }
     type User{
@@ -35,6 +62,7 @@ const typeDefs = `
         title: String!,
         published: Boolean!,
         body:String
+        author: User!
     }
 `
 //Resolvers
@@ -47,14 +75,14 @@ const resolvers ={
                 return user.name.toLowerCase().includes(args.query.toLowerCase())
             })
         },
-        post(parent,args,ctx,info)
+        posts(parent,args,ctx,info)
         {
-            return {
-            id:'001',
-            title:'Lol read this',
-            published:true
+            if (!args.query)
+                return posts
+            return posts.filter((post)=>{
+                return post.title.toLowerCase().includes(args.query.toLowerCase()) || post.body.toLowerCase().includes(args.query.toLowerCase()) 
+            })
         }
-    }
     }
 }
 const server = new GraphQLServer({
