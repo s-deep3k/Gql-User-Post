@@ -46,8 +46,8 @@ const posts=[
 //Typedef (schema)
 const typeDefs = `
     type Query {
-        users(query:String!):[User!]!
-        posts(query:String!):[Post!]!
+        users(query:String):[User!]!
+        posts(query:String):[Post!]!
         me:User!
         post:Post!      
     }
@@ -81,6 +81,13 @@ const resolvers ={
                 return posts
             return posts.filter((post)=>{
                 return post.title.toLowerCase().includes(args.query.toLowerCase()) || post.body.toLowerCase().includes(args.query.toLowerCase()) 
+            })
+        }
+    },
+    Post:{
+        author(parent,args,ctx,info){
+            return users.find((user)=>{
+                return user.id === parent.author
             })
         }
     }
