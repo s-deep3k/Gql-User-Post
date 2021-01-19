@@ -43,11 +43,34 @@ const posts=[
 
     }
 ]
+const comments=[
+    {
+        id:'C01',
+        text:'This is the first comment yay',
+        author:'abc123'
+    },
+    {
+        id:'C02',
+        text:'2nd comment here it goes',
+        author:'abc345'
+    },
+    {
+        id:'C03',
+        text:'3rd comment brrrrr',
+        author:'abc123'
+    },
+    {
+        id:'C04',
+        text:'4th comment is the end',
+        author:'abc789'
+    }
+]
 //Typedef (schema)
 const typeDefs = `
     type Query {
         users(query:String):[User!]!
         posts(query:String):[Post!]!
+        comments(query:String):[Comment!]!
         me:User!
         post:Post!      
     }
@@ -56,12 +79,19 @@ const typeDefs = `
         name:String!
         email:String!,
         age:Int
+        posts:[Post!]!
+        comments:[Comment!]!
     }
     type Post{
         id:ID!,
         title: String!,
         published: Boolean!,
         body:String
+        author: User!
+    }
+    type Comment{
+        id:ID!,
+        text:String!,
         author: User!
     }
 `
@@ -82,13 +112,35 @@ const resolvers ={
             return posts.filter((post)=>{
                 return post.title.toLowerCase().includes(args.query.toLowerCase()) || post.body.toLowerCase().includes(args.query.toLowerCase()) 
             })
+        },
+        comments(parent,args,ctx,info){
+            if (!args.query)
+                return comments
+            return comments.filter((comment)=>{
+                return comment.text.toLowerCase().includes(args.query.toLowerCase())
+            })
         }
-    },
+    }, //parent means the original typedef. for.e.g Post and User here
     Post:{
         author(parent,args,ctx,info){
-            return users.find((user)=>{
-                return user.id === parent.author
+            return users.find((user)=> user.id === parent.author)
+        }
+    },
+    User:{
+        posts(parent,args,ctx,info){
+            return posts.filter((post)=>{
+                return post.author===parent.id
             })
+        },
+        comments(parent,args,ctx,info){
+            return comments.filter((comment)=>{
+                return comment.author===parent.id
+            })
+        }
+    },
+    Comment:{
+        author(parent,args,ctx,into){
+            return users.find((user)=> user.id === parent.author)
         }
     }
 }
