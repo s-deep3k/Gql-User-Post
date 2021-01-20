@@ -47,22 +47,26 @@ const comments=[
     {
         id:'C01',
         text:'This is the first comment yay',
-        author:'abc123'
+        author:'abc123',
+        post:'001'
     },
     {
         id:'C02',
         text:'2nd comment here it goes',
-        author:'abc345'
+        author:'abc345',
+        post:'002'
     },
     {
         id:'C03',
         text:'3rd comment brrrrr',
-        author:'abc123'
+        author:'abc123',
+        post:'001'
     },
     {
         id:'C04',
         text:'4th comment is the end',
-        author:'abc789'
+        author:'abc789',
+        post:'003'
     }
 ]
 //Typedef (schema)
@@ -72,7 +76,12 @@ const typeDefs = `
         posts(query:String):[Post!]!
         comments(query:String):[Comment!]!
         me:User!
-        post:Post!      
+        post:Post!
+        comment:Comment!      
+    }
+    type Mutation{
+        createPost(title:String!):Post!
+        createUser():User!
     }
     type User{
         id:ID!
@@ -88,11 +97,13 @@ const typeDefs = `
         published: Boolean!,
         body:String
         author: User!
+        comments:[Comment!]!
     }
     type Comment{
         id:ID!,
         text:String!,
         author: User!
+        post:Post!
     }
 `
 //Resolvers
@@ -124,6 +135,9 @@ const resolvers ={
     Post:{
         author(parent,args,ctx,info){
             return users.find((user)=> user.id === parent.author)
+        },
+        comments(parent,args,ctx,info){
+            return comments.filter((comment)=> comment.post === parent.id)
         }
     },
     User:{
@@ -141,6 +155,9 @@ const resolvers ={
     Comment:{
         author(parent,args,ctx,into){
             return users.find((user)=> user.id === parent.author)
+        },
+        post(parent,args,ctx,into){
+            return posts.find((post)=> post.id === parent.post)
         }
     }
 }
