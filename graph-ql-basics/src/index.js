@@ -1,4 +1,5 @@
 import {GraphQLServer} from 'graphql-yoga'
+import v4 from 'uuid'
 const users=[
     {
         id:"abc123",
@@ -80,8 +81,9 @@ const typeDefs = `
         comment:Comment!      
     }
     type Mutation{
-        createPost(title:String!):Post!
-        createUser():User!
+        createPost(author:String!,title:String!,published:Boolean!,body:String!):Post!
+        createUser(name:String!,email:String!,age:Int):User!
+        createComment(text:String!,author:String!,post:ID!):Comment!
     }
     type User{
         id:ID!
@@ -131,7 +133,54 @@ const resolvers ={
                 return comment.text.toLowerCase().includes(args.query.toLowerCase())
             })
         }
-    }, //parent means the original typedef. for.e.g Post and User here
+    }, 
+    Mutation:{
+        createPost(parent,args,ctx,info){
+            const isUser = users.find((user)=> args.author === user.name)
+            if(!isUser)
+                throw new Error("No such User exists!")
+
+            const post ={
+                id:v4(),
+                title:args.title,
+                author:args.author,
+                published:args.published,
+                body:args.body
+            }
+            posts.push(post)
+            return post
+
+        },
+    createUser(parent,args,ctx,info){
+        const isEmail = users.some((user)=> args.email === user.email || args.name === user.name)
+        if(isEmail)
+            throw new Error("Email already exists!")
+
+        const user ={
+            id:v4(),
+            name:args.name,
+            email:args.email,
+            age:args.age
+        }
+        users.push(user)
+        return user
+    },
+    createUser(parent,args,ctx,info){
+        const isEmail = users.some((user)=> args.email === user.email || args.name === user.name)
+        if(isEmail)
+            throw new Error("Email already exists!")
+
+        const user ={
+            id:v4(),
+            name:args.name,
+            email:args.email,
+            age:args.age
+        }
+        users.push(user)
+        return user
+    }
+},
+    //parent means the original typedef. for.e.g Post and User here
     Post:{
         author(parent,args,ctx,info){
             return users.find((user)=> user.id === parent.author)
