@@ -81,9 +81,18 @@ const typeDefs = `
         comment:Comment!      
     }
     type Mutation{
-        createPost(author:String!,title:String!,published:Boolean!,body:String!):Post!
-        createUser(name:String!,email:String!,age:Int):User!
-        createComment(text:String!,author:String!,post:ID!):Comment!
+        createPost(data:createPostInput):Post!
+        createUser(data:createUserInput):User!
+        createComment(data:creatCommentInput):Comment!
+    }
+    input createPostInput{
+        author:String!,title:String!,published:Boolean!,body:String!
+    }
+    input createUserInput{
+        name:String!,email:String!,age:Int
+    }
+    input createCommentInput{
+        text:String!,author:ID!,post:ID!
     }
     type User{
         id:ID!
@@ -136,48 +145,42 @@ const resolvers ={
     }, 
     Mutation:{
         createPost(parent,args,ctx,info){
-            const isUser = users.find((user)=> args.author === user.name)
+            const isUser = users.find((user)=> args.data.author === user.name)
             if(!isUser)
                 throw new Error("No such User exists!")
 
             const post ={
                 id:v4(),
-                title:args.title,
-                author:args.author,
-                published:args.published,
-                body:args.body
+                ...args.data
             }
             posts.push(post)
             return post
 
         },
     createUser(parent,args,ctx,info){
-        const isEmail = users.some((user)=> args.email === user.email || args.name === user.name)
+        const isEmail = users.some((user)=> args.data.email === user.email || args.data.name === user.name)
         if(isEmail)
             throw new Error("Email already exists!")
 
         const user ={
             id:v4(),
-            name:args.name,
-            email:args.email,
-            age:args.age
+            ...args.data
         }
         users.push(user)
         return user
     },
-    createUser(parent,args,ctx,info){
-        const isEmail = users.some((user)=> args.email === user.email || args.name === user.name)
-        if(isEmail)
-            throw new Error("Email already exists!")
+    createComment(parent,args,ctx,info){
+        const isAuthor = users.some((user)=> args.data.author === user.id)
+        const isPost = posts.some((post)=> args.data.post === post.id && post.published) 
+        if(!isPost || !isAuthor)
+            throw new Error("Post/User doesnt exist!")
 
-        const user ={
+        const comment ={
             id:v4(),
-            name:args.name,
-            email:args.email,
-            age:args.age
+            ...args.data
         }
-        users.push(user)
-        return user
+        comments.push(comment)
+        return comment
     }
 },
     //parent means the original typedef. for.e.g Post and User here
