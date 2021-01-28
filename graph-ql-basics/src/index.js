@@ -83,7 +83,7 @@ const typeDefs = `
     type Mutation{
         createPost(data:createPostInput):Post!
         createUser(data:createUserInput):User!
-        createComment(data:creatCommentInput):Comment!
+        createComment(data:createCommentInput):Comment!
     }
     input createPostInput{
         author:String!,title:String!,published:Boolean!,body:String!
