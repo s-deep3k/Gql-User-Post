@@ -84,6 +84,9 @@ const typeDefs = `
         createPost(data:createPostInput):Post!
         createUser(data:createUserInput):User!
         createComment(data:createCommentInput):Comment!
+        deletePost(id:ID!):Post!
+        deleteUser(id:ID!):Post!
+        deleteComment(id:ID!):Post!
     }
     input createPostInput{
         author:String!,title:String!,published:Boolean!,body:String!
@@ -181,6 +184,19 @@ const resolvers ={
         }
         comments.push(comment)
         return comment
+    },
+    deleteUser(parent,args,ctx,info){
+        const UserIndex = users.findIndex((user)=> user.id === args.id)
+        if(UserIndex=== -1)
+            throw new Error("No User Found!")
+        posts = posts.filter((post)=>{
+            const match = args.id === post.author
+            if (match)
+                comments = comments.filter((comment)=> comment.post !== post.id)
+            comments = comments.filter((comment)=> comment.author !== post.author)
+        const deletedUsers = users.splice(UserIndex,1)
+        return deletedUsers[0]
+        })
     }
 },
     //parent means the original typedef. for.e.g Post and User here
