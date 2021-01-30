@@ -1,6 +1,6 @@
 import {GraphQLServer} from 'graphql-yoga'
 import v4 from 'uuid'
-const users=[
+let users=[
     {
         id:"abc123",
         name:"Andrew Bhai",
@@ -19,7 +19,7 @@ const users=[
         email:"gone@bkl"
     }
 ]
-const posts=[
+let posts=[
     {
         id:"001",
         title:"Post 1",
@@ -44,7 +44,7 @@ const posts=[
 
     }
 ]
-const comments=[
+let comments=[
     {
         id:'C01',
         text:'This is the first comment yay',
@@ -85,8 +85,8 @@ const typeDefs = `
         createUser(data:createUserInput):User!
         createComment(data:createCommentInput):Comment!
         deletePost(id:ID!):Post!
-        deleteUser(id:ID!):Post!
-        deleteComment(id:ID!):Post!
+        deleteUser(id:ID!):User!
+        deleteComment(id:ID!):Comment!
     }
     input createPostInput{
         author:String!,title:String!,published:Boolean!,body:String!
@@ -193,10 +193,24 @@ const resolvers ={
             const match = args.id === post.author
             if (match)
                 comments = comments.filter((comment)=> comment.post !== post.id)
-            comments = comments.filter((comment)=> comment.author !== post.author)
+            return !match
+        })
+        comments = comments.filter((comment)=> comment.author !== args.id)
         const deletedUsers = users.splice(UserIndex,1)
         return deletedUsers[0]
-        })
+    },
+    deletePost(parent,args,ctx,info){
+        const PostIndex = posts.findIndex((post)=>post.id ===args.id)
+        if(PostIndex=== -1)
+            throw new Error("No Post found with that id!")
+        comments = comments.filter((comment)=> comment.post !== args.id)
+        return posts.splice(PostIndex,1)[0]
+    },
+    deleteComment(parent,args,ctx,info){
+        const CommentIndex = comments.findIndex((comment)=> comment.id === args.id)
+        if(CommentIndex === -1)
+            throw new Error("No Comment found with that id")
+        return comments.splice(CommentIndex,1)[0]
     }
 },
     //parent means the original typedef. for.e.g Post and User here
