@@ -1,11 +1,11 @@
 const User={
-    posts(parent,args,ctx,info){
-        return posts.filter((post)=>{
+    posts(parent,args,{db},info){
+        return db.posts.filter((post)=>{
             return post.author===parent.id
         })
     },
-    comments(parent,args,ctx,info){
-        return comments.filter((comment)=>{
+    comments(parent,args,{db},info){
+        return db.comments.filter((comment)=>{
             return comment.author===parent.id
         })
     }

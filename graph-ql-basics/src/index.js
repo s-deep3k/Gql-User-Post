@@ -4,6 +4,7 @@ import Mutation from './resolvers/Mutation'
 import Post from './resolvers/Post'
 import User from './resolvers/User'
 import Comment from './resolvers/Comment'
+import db from './db'
     //parent means the original typedef. for.e.g Post and User here
 const server = new GraphQLServer({
     typeDefs:'./src/schema.graphql',
@@ -15,7 +16,7 @@ const server = new GraphQLServer({
         Comment
     },
     context:{
-        db:'./src/db.js'
+        db
     }
 })
 server.start(()=>{
