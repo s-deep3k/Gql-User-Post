@@ -64,6 +64,35 @@ const Mutation={
         if(CommentIndex === -1)
             throw new Error("No Comment found with that id")
         return db.comments.splice(CommentIndex,1)[0]
+    },
+    updateUser(parent,args,{db},info){
+        const user = db.users.find((each)=>each.id === args.id )
+        if(!user)
+            throw new Error("No User with that ID!")
+        const isEmail = db.users.some((user)=> args.data.email === user.email )
+        if(isEmail)
+            throw new Error("Email already exists!")
+        if(args.data.age != undefined && args.data.age > 0)
+            user.age= args.data.age
+        user.name = args.data.name
+        user.email = args.data.email
+        return user
+    },
+    updatePost(parent,args,{db},info){
+        const post = db.posts.find((each)=> each.id === args.id)
+        if(!post)
+            throw new Error("No Post with that ID!")
+        post.title =args.data.title
+        post.published = args.data.published
+        post.body = args.data.body
+        return post
+    },
+    updateComment(parent,args,{db},info){
+        const comment = db.comments.find((comment)=> comment.id === args.id)
+        if(!comment)
+            throw new Error("No Comment with that ID!")
+        comment.text = args.data.text
+        return comment
     }
-    }
+}
 export {Mutation as default}
