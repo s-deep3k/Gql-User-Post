@@ -25,7 +25,7 @@ const Mutation={
         db.users.push(user)
         return user
     },
-    createComment(parent,args,{db},info){
+    createComment(parent,args,{db,pubsub},info){
         const isAuthor = db.users.some((user)=> args.data.author === user.id)
         const isPost = db.posts.some((post)=> args.data.post === post.id && post.published) 
         if(!isPost || !isAuthor)
@@ -36,6 +36,7 @@ const Mutation={
             ...args.data
         }
         db.comments.push(comment)
+        pubsub.publish(`New comment of post , ID :${args.data.post}`,{comment})
         return comment
     },
     deleteUser(parent,args,{db},info){
@@ -72,26 +73,32 @@ const Mutation={
         const isEmail = db.users.some((user)=> args.data.email === user.email )
         if(isEmail)
             throw new Error("Email already exists!")
-        if(args.data.age != undefined && args.data.age > 0)
+        if(args.data.age != undefined && args.data.age > 0 && typeof args.data.age == 'int')
             user.age= args.data.age
-        user.name = args.data.name
-        user.email = args.data.email
+        if (typeof args.data.name == 'string')
+            user.name = args.data.name
+        if (typeof args.data.email == 'string')
+            user.email = args.data.email
         return user
     },
     updatePost(parent,args,{db},info){
         const post = db.posts.find((each)=> each.id === args.id)
         if(!post)
             throw new Error("No Post with that ID!")
-        post.title =args.data.title
-        post.published = args.data.published
-        post.body = args.data.body
+        if (typeof args.data.title == 'string')
+            post.title =args.data.title
+        if (typeof args.data.published == 'boolean')    
+            post.published = args.data.published
+        if (typeof args.data.body == 'string')    
+            post.body = args.data.body
         return post
     },
     updateComment(parent,args,{db},info){
         const comment = db.comments.find((comment)=> comment.id === args.id)
         if(!comment)
             throw new Error("No Comment with that ID!")
-        comment.text = args.data.text
+        if (typeof args.data.name == 'string')
+            comment.text = args.data.text
         return comment
     }
 }

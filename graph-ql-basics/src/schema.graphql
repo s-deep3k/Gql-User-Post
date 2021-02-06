@@ -6,6 +6,10 @@ type Query {
     post:Post!
     comment:Comment!      
 }
+type Subscription{
+    count:Int!,
+    comment(postid:String!):Comment!
+}
 type Mutation{
     createPost(data:createPostInput):Post!
     createUser(data:createUserInput):User!
@@ -27,13 +31,13 @@ input createCommentInput{
     text:String!,author:ID!,post:ID!
 }
 input updatePostInput{
-    title:String!,published:Boolean!,body:String!
+    title:String,published:Boolean,body:String
 }
 input updateUserInput{
-    name:String!,email:String!,age:Int
+    name:String,email:String,age:Int
 }
 input updateCommentInput{
-    text:String!
+    text:String
 }
 type User{
     id:ID!
