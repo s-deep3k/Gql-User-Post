@@ -36,7 +36,7 @@ const Mutation={
             ...args.data
         }
         db.comments.push(comment)
-        pubsub.publish(`New comment of post , ID :${args.data.post}`,{comment})
+        pubsub.publish(`New comment of post , ID :${args.data.post}`,{comment})     //comment object property is the same name as the property under Subscription
         return comment
     },
     deleteUser(parent,args,{db},info){
