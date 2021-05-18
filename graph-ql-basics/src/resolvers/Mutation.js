@@ -1,7 +1,7 @@
 import v4 from 'uuid'
 const Mutation={
-        createPost(parent,args,{db},info){
-            const isUser = db.users.find((user)=> args.data.author === user.name)
+        createPost(parent,args,{db,pubsub},info){
+            const isUser = db.users.find((user)=> args.data.author === user.id)
             if(!isUser)
                 throw new Error("No such User exists!")
 
@@ -10,6 +10,13 @@ const Mutation={
                 ...args.data
             }
             db.posts.push(post)
+            if(post.published)
+                pubsub.publish(`New post !`,{
+                    post:{
+                        mutation:"CREATED",
+                        data:post
+                    }
+                })
             return post
 
         },
@@ -53,12 +60,20 @@ const Mutation={
         const deletedusers = db.users.splice(UserIndex,1)
         return deletedusers[0]
     },
-    deletePost(parent,args,{db},info){
+    deletePost(parent,args,{db,pubsub},info){
         const PostIndex = db.posts.findIndex((post)=>post.id ===args.id)
         if(PostIndex=== -1)
             throw new Error("No Post found with that id!")
         db.comments = db.comments.filter((comment)=> comment.post !== args.id)
-        return db.posts.splice(PostIndex,1)[0]
+        const [post] = db.posts.splice(PostIndex,1)
+        if(post.published)
+            pubsub.publish(`New post !`,{
+                post:{
+                    mutation:'DELETED',
+                    data:post
+                }
+            })
+        return post
     },
     deleteComment(parent,args,{db},info){
         const CommentIndex = db.comments.findIndex((comment)=> comment.id === args.id)
@@ -81,8 +96,9 @@ const Mutation={
             user.email = args.data.email
         return user
     },
-    updatePost(parent,args,{db},info){
+    updatePost(parent,args,{db,pubsub},info){
         const post = db.posts.find((each)=> each.id === args.id)
+        const originalPost = {...post}
         if(!post)
             throw new Error("No Post with that ID!")
         if (typeof args.data.title == 'string')
@@ -91,6 +107,28 @@ const Mutation={
             post.published = args.data.published
         if (typeof args.data.body == 'string')    
             post.body = args.data.body
+
+        if (originalPost.published && !post.published)
+          {  pubsub.publish(`New post !`,{
+            post:{
+                mutation:'CREATED',
+                data:post
+            }
+        })}
+        else if(!originalPost.published && post.published)
+        {pubsub.publish(`New post !`,{
+            post:{
+                mutation:'DELETED',
+                data:post
+            }
+        })}
+        else
+        {pubsub.publish(`New post !`,{
+            post:{
+                mutation:'UPDATED',
+                data:post
+            }
+        })}
         return post
     },
     updateComment(parent,args,{db},info){
